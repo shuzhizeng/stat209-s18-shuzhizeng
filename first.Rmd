@@ -1,0 +1,27 @@
+---
+title: "My first markdown file"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Reading the Data
+
+Hello here is some text that is NOT code.
+
+```{r, echo=FALSE, message=FALSE}
+class <- read_csv("https://raw.githubusercontent.com/URstats/stat209-s18-statsmaths/master/fav_restaurants.csv")
+ggplot(class, aes(cuisine)) +
+  geom_bar()
+```
+
+
+
+
