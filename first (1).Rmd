@@ -1,0 +1,34 @@
+---
+title: "my first markdown file"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(readr)
+library(ggplot2)
+```
+## Reading the Data
+This dataset describes students' favorite restaurants in six different specifications.
+```{r}
+class <- read_csv("C:\\Users\\sz7xq\\Desktop\\fav_restaurants.csv")
+```
+##Plotting the Data
+A plot shows the location distribution of the class
+```{r}
+ggplot(class,aes(location))+geom_bar()
+
+
+```
+This plot shows the distribution with location and cuisine.
+```{r}
+ggplot(class,aes(location, cuisine))+geom_point()
+```
+This graph shows a relation between location and cost.
+```{r}
+ggplot(class,aes(location, cost_per_person))+geom_point()
+```
+
+
