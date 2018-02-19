@@ -1,0 +1,81 @@
+---
+title: "Research of Non-Spanish players in Real Madrid soccer club"
+author: "Shuzhi Zeng"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(ggplot2)
+library(dplyr)
+```
+
+# Research of Non-Spanish players in Real Madrid soccer club
+
+## Overview
+
+
+Real Madrid is a famous soccer club in Spanish League and almost half of its players are from Spain in the history. However, there are also many great players from other countries joined this club in the history, including some of the best players in the world. This data set collects 75 non-Spanish players from 1957-2017 in Real Madrid's history, and we may be able to find some interesting results by sorting these data. This set can also help the people who love soccer to figure out those greatest players who had ever joined Real Madrid and a tendency of the "bring in" policy of Read Madrid club these years.
+
+## Data dictionary
+
+- **name**: a character variable which shows the full name of each player.
+- **nationality**: a categorical variable which illustrates the home country of each player. Possible options are like "Germany", "China", "Brazil", etc.
+- **position**: a categorical variable which shows the role of each player in the match. Possible options are like "Forward", "Defender", "Midfielder" and "Goalkeeper".
+- **year_join**: a numerical variable which describes the year of each player joined the club.
+- **year_leave**: a numerical variable which shows the year of each player left the club ("2018" means that the player is still in the club).
+
+
+
+
+```{r}
+player <- read_csv("https://raw.githubusercontent.com/urstats/stat209-s18-shuzhizeng/master/soccer_.csv")
+player
+```
+
+
+## Exploratory Analysis
+
+
+The graphs below focus on the tendency of players flow in each year. Some relations can also been seen such as nationality and position changings each year. Most of the analysis will focus on the players over year 2000 (21st century), and we can predict the movement of foriegn players in Real Madrid in the future.
+ 
+```{r, echo=FALSE}
+player2000<-filter(player, year_join>"2000")
+player2000
+ggplot(player2000, aes(year_leave, name))+
+  geom_point(aes(color= nationality), size= 2)+
+  ggtitle("leaving year of players in 21st century ")
+```
+The graph above shows the relation of each non-spanish player in 21st century and the year when players left the club. Different colors indicate different nationality of each player. We can see that "2018" has the most players which means that many players after 2000 are still in the team. Also, most of the players left the team after 2008, where only 4 players left between 2000 and 2008.
+
+```{r}
+ggplot(player2000, aes(position, year_join))+
+  geom_point(aes(color= nationality), size= 2)+
+  ggtitle("Positions of players after 2000")
+```
+This graph shows the distribution of players postition and the year they joined the club after 2000. It's obvious that most players joined the club are midfielders, and there's only one goalkeeper joined the club since 2000. Also the number of amount that players joined each year is around 1-3 players, so there's no big "bring in" (buy many players in one year) after 2000 . 
+
+
+```{r}
+player1957<-filter(player, year_join<"2000")
+player2000
+ggplot(player1957, aes(position, year_join))+
+  geom_point(aes(color= nationality), size= 2)+
+  ggtitle("Positions of players before 2000")
+
+```
+
+This graph shows the same relation as the previous graph, and the only different is that this graph shows the players from 1957 to 1999, instead of after 2000. So we can make a comparison of the changings between this century and last century. We can see that the amount of "Defender","Forward" and "Midfielder" is almost the same, where "Goalkeeper"" is still the least. Also there's still no big "bring in" in this period of time.  
+## Conclusion
+
+
+Overall, we can make a conclusion that comparing with the situation of last century, the club pays more attention in bringing in more "Midfielder" among non-spanish players, and "Goalkeeper" is still very hard to join since there were only 3 new foriegn goalkeepers joined the club from 1957-2017. More players left the club after 2008, but greater players have greater chances to stay in the team. Finally, Real Madrid is not the club who likes to make big "bring in", so the chances for foriegn players to join the club are still challenging in the future.   
+## References
+
+
+
+
