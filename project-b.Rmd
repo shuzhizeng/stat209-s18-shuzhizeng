@@ -1,0 +1,104 @@
+---
+title: "Income Research of Honolulu"
+author: "Shuzhi Zeng"
+output: html_notebook
+---
+
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(fig.height = 5)
+knitr::opts_chunk$set(fig.width = 8.5)
+knitr::opts_chunk$set(out.width = "100%")
+knitr::opts_chunk$set(dpi = 300)
+
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(ggmap)
+library(viridis)
+library(forcats)
+library(smodels)
+
+```
+
+
+```{r, echo=FALSE}
+tracts <- read_csv("https://raw.githubusercontent.com/statsmaths/stat_data/gh-pages/acs_tract_data_2016.csv.gz")
+```
+
+Although far from the inland of America, Hawaii is still an essential component of US which makes great contribution to US economy by tourism each year. Nevertheless, Hawaii also contains a large amount of native population with more than 1200 thousand citizens, which made the tract census still be essential. As the largest city in Hawaii, Honolulu is a great choice to start with. 
+
+This report shows the result of a research of the income distribution along different longitudes in Honolulu, which finally indicates some key factors which represents the living standard of people from different areas by income. 
+
+The first step to get into the research is to create an overview of income distribution of people in different regions in Honolulu. In this case, we will use "county" as the unit of a specific region, and then we create a map with those counties be shown on different places. So this map can tell us the average income level of people in each county.
+```{r, echo=FALSE}
+library(ggmap)
+tracts_honolulu <- filter(tracts, cbsa == "Urban Honolulu, HI")
+
+
+
+qmplot(lon, lat, data = tracts_honolulu, geom = "blank") +
+  geom_point(aes(color = median_rent, size= hh_gini), alpha = 0.8) +
+  scale_color_viridis()+
+  ggtitle("Map of Honolulu")
+
+```
+The map above shows the average income level of different counties of Honolulu. Each point on the map means a specific county. Nevertheless, we did not directly use the "average income" variable to indicate the income distribution. Instead, we introduced two other variables, "median rent" and "hh gini" to show the overview of income. Median rent means the median of the household rent in different areas, which is an important indicator of income levels. High median rent means that the lands in this region is more expensive, so wealthier people are more likely to live here while low income people would not. In contrast, the land with lower median rent would be a good choice for poor people, although rich people can also stay in this region if they want. "hh gini" is the average gini coeffiecient of a region. The larger the coefficient is, the larger income difference is in this region. 
+
+From the map we can notice that median rent is indicated by colors while gini coefficient is indicated by sizes. Most of the points on the map shows a darker blue or green color, which means that the median rent in most places of Honolulu is not so high, except places with yellow colors such as the southeast corner along the beach. Also noticing that the region with higher population density normally has higher gini coefficient, especially those regions along the coast and next to main rivers. There is a region with very high density at the bottom with low median rent and high gini, while those places with high median rent will have smaller ginis. That illustrates the result that few low income people would live in the area with high rents, which leads the gini coefficient to become smaller. Also since most areas have large ginis, we can indicate that many wealthy people may also own houses in low median rent areas. 
+
+Finally, noticing that there are two counties in the very middle of the map have a very small gini with high rent, which are very different with regions around them. So maybe that's a vocation site with luxury houses.
+
+
+So we already had an overview of income distibution of different counties in Honolulu right now. The next step is to figure out some specific issues, and we have to use income data from here. We divided the income amounts into three divisions: income less than 30 thousand, income between 30-100 thousand and income over 100 thousand dollars. Each division represents an income level. We calculated the percentages of people in each divison of each  county, which can give us a view of income distibution.
+
+
+```{r, echo=FALSE}
+tracts_honolulu$income_30_lower<-tracts_honolulu$income_000_010+tracts_honolulu$income_010_015+tracts_honolulu$income_015_020+tracts_honolulu$income_020_025+tracts_honolulu$income_025_030
+
+tracts_honolulu$income_30_100<- tracts_honolulu$income_030_035+ tracts_honolulu$income_035_040+ tracts_honolulu$income_040_045+ tracts_honolulu$income_045_050+tracts_honolulu$income_050_060 + tracts_honolulu$income_060_075+ tracts_honolulu$income_075_100
+
+tracts_honolulu$income_over_100<-tracts_honolulu$income_100_125+tracts_honolulu$income_125_150+tracts_honolulu$income_150_200+tracts_honolulu$income_200_999
+
+ggplot(tracts_honolulu,aes(lon, income_30_lower))+
+  geom_point(size=1, color= "red", alpha=0.3)+
+  geom_point(aes(y=income_30_100),size=1, color="green", alpha=0.3)+
+  geom_point(aes(y=income_over_100),size=1, color="blue", alpha=0.3)+
+  xlab("longitude")+
+  ylab("percentage distribution of income")+
+  ggtitle("Income distribution with longitude")+
+  annotate("point", x=-157.8633, y=100, color="green", size =3)+
+  annotate("text", x=-157.863, y=95, label="100% of medium level")+
+  annotate("point", x=-157.8641, y=64.13, color="red", size =3)+
+  annotate("text", x=-157.864, y=70, label="high percentage of lower income")
+  
+  
+  
+
+```
+The graph above shows the income distribution divided by longitude. Red points illustrate the lower income percentage of a specific county, while green shows the medium income percentage and blue shows the highest income level percentage. We can see that most red points distributed under 25%, so most people in Honolulu have a good income resource. However, most high percentage of red points gather around longitude -158.86, which means that most lower income people stay in this longtitude region. If we match that longitude with our first map we can find that this region is just the region with highest density and high gini points level at the bottom of the map. Also noticing that most high percentage blue points show up over -157.8, so that's the region that most rich people lived in. Matching to our map that make's sense since that's the region with yellow color points on the right cornor of our map, which means that the median rent is very high and only rich people can afford it. 
+
+We also find something interesting here. The top highlighted green point is the only area where all the people are in medium income level, which is unlikely other points. This area should have a low gini coefficient. Also the highlighted red point shows a very high percentage of low income rate, so this area should have low median rent so poor people are likely to pick this place to stay. 
+```{r, echo=FALSE}
+tracts_honolulu$rent_less<-tracts_honolulu$rent_by_income_00_10+tracts_honolulu$rent_by_income_10_15+tracts_honolulu$rent_by_income_15_20+tracts_honolulu$rent_by_income_20_25
+
+tracts_honolulu$rent_more<-tracts_honolulu$rent_by_income_25_30+tracts_honolulu$rent_by_income_30_35+tracts_honolulu$rent_by_income_35_40+tracts_honolulu$rent_by_income_40_50
+
+ggplot(tracts_honolulu, aes(lon, rent_less))+ 
+  geom_point(aes(color=bin(hh_income_top_5, 3)))+
+  ggtitle("less rent rate distribution with different levels of average income")+
+  xlab("longitude")+
+  ylab("less spending on rent")
+```
+For the last step we have to look on the rent-by proportion of each area, which is the percentage of income using to pay for the rent. High income with low rent-by rate would mean more money to spend and have a better living standard. Here we use "income top 5" variable as colors to show our average income level, which is divided into 3 groups. The y axis shows the low rent-by rate proportion, which is the group that rent-by rate is smaller than 25%. Looking at the graph we can see that most areas have a low rent-by rate less than 50%, so people still spend a great amount of money for household. Also higher y value points still distributed at right with many blue points, which shows that rich people are more likely to spend less proportion of income on household. 
+
+Conclusion: Overall, most people in Honolulu have a good income resource. People with lower income are more likely to stay in low median rate place, while rich people also like to stay in the same region which causes a high gini coefficient. The right corner along the coast is a place where most rich people gathered. Rent is still a big task for many people, except for some anomoly, such as a group of wealthy people. 
+
+## References
+
+
+
+
