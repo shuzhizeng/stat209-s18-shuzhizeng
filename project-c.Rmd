@@ -1,0 +1,96 @@
+---
+title: "Analysis of paintings of three great Chinese artists in Christies auction"
+author: "Shuzhi Zeng"
+output: html_document
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(out.width = "100%")
+knitr::opts_chunk$set(dpi = 300)
+
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(ggmap)
+library(viridis)
+library(forcats)
+library(smodels)
+```
+
+```{r}
+auction <- read_csv("https://raw.githubusercontent.com/urstats/stat209-s18-shuzhizeng/master/auction.csv")
+```
+
+## Data dictionary
+
+
+- **name**: a character variable which shows the full name of each painting.
+- **artist**: a categorical variable which illustrates name of the artist of each painting. It's a categorical variable since there are only three artists in this dataset, and each painting falls in the style of one of the artists. Possible choices are "Qi Baishi", "Zhang Daqian" and "Xu Beihong". 
+- **size**: a numerical variable which shows the size of each painting in the unit "cm^2". 
+- **price**: a numerical variable which describes the transaction price of each painting, representing in thousand "HKD" (Hong Kong Dollar). 
+
+
+
+## Introduction
+Christies, one of the most famous auction companies in the world, offers premier auctions of finest arts and antiques each year and attracts most elites in art collections to join. Among the arts for auctions in Christies, Chinese arts including porcelains, jades and paintings occupy a great proportion. Moreover, the value of modern Chinese paintings has raised up in recent years, which attracts the sights of many collectors. This dataset collects the information of 100 Chinese modern paintings which are made by three master artists in Chinese modern art history : Qi Baishi, Zhang Daqian and Xu Beihong, and the result of each painting after auctions from Christies. We are hoping to find out some relations between the size and hammer price of each painting with their artist, and making a prediction for the value of the paintings from these three masters.
+
+Comparing each of the two variables we can make 3 hypothesis: 
+1. When comparing the size of paintings by each artist, we might predict that the mean of each artist might be similiar, and it might won't be a significant different.
+2. When comparing the price of paintings by each artist, we predict that the mean of Qi Baishi's painting might be slightly higher, but overall the price is still similiar. Qi Baishi's confidence interval may be larger than the others, but it's hard to predict whether there's a significant effect.
+3. When comparing the price with the size, we may assume that paintings with larger size will have a higher price in auction.
+
+
+
+## Methods
+We made a dataset which contains 100 paintings from those 3 painters. The information was collected from Christie's official website. We will make regression tables to compare the mean and confidence interval of each pair of the variables, and try to figure out a trend of the value of the paintings by those 3 artists. 
+
+## Results
+```{r}
+model_size <- lm_basic(size ~ 1 + artist, data = auction)
+reg_table(model_size, level=0.95)
+```
+```{r}
+ggplot(auction, aes (artist,size))+
+  geom_boxplot()
+```
+
+First we compare the size of paintings with different artists. We use Qi Baishi as a baseline. The result shows that the sample mean of size of Qi Baishi is 3876 cm^2, with a 95% confidence interval [2601, 5151]. The sample mean of the size of Xu Beihong is about 3876+498= 4374 cm^2, but it's not a significant difference since 0 is in the CI. The mean size of Zhang Daqian is 3876+3484= 7360 cm^2 with a significant CI. Hence Zhang Daqian's paintings are much larger than other two artists' paintings. Also from the boxplot we can see that Zhang Daqian, in the same way, has the higherst median while Xu Beihong has the largest variation in size. 
+
+```{r}
+model_price <- lm_basic(price ~ 1 + artist, data = auction)
+reg_table(model_price, level=0.95)
+```
+
+```{r}
+ggplot(auction, aes (artist,price))+
+  geom_boxplot()
+```
+
+Then we compare the hammer price of the paintings of different artists and we still use Qi Baishi as a baseline. According to the table, the mean hammer price of Qi Baishi's paintings is 6423 thousand HKD with a 95% CI [2352.1, 10496]. The mean hammer price of Xu Beihong's paintings is 6711.9 thousand HKD but there's no significant statistical evidence to show that the mean is different between Xu Beihong and Qi Baishi (CI contains 0). In contrast, the mean hammer price of Zhang Daqian is 15391.7 which is much larger than the other two artists, and this result is significant since CI is positive. The boxplot shows that Zhang Daqian has the highest median and greatest variation in price. 
+
+```{r}
+model_regression <- lm_basic(price ~ 1 + size, data = auction)
+reg_table(model_regression, level=0.95)
+```
+```{r}
+qplot(size, price, data = auction) + geom_smooth(method = "lm")
+```
+
+Finally we made a regression test of the size and hammer price. Assuming size to be the x axis and price to be the y axis value, we can see that the intercept point is 2116.8 thousand dollars with a slope of 1.426. We can get y=1.42x+2116.8.
+The graph illustrates the relation between size and price, and the result fits our guess that the relation is postive proportional. The scatter points also show that most paintings are less than 5000 cm^2 and 1000 thousand HKD, while paintings around 10000 cm^2 have the greatest variation in price. 
+
+## Conclusions
+
+In the first two tests, we both use Qi Baishi as baseline values, which are indicated by "intercept" under coefficient sections. The estimator shows the sample mean of Qi baishi and the 95% confidence interval shows that the mean would be very likely to show in this range. The results of Xu Beihong and Zhang Daqian are indicated in the second and third line in the coefficient section. The estimator value shows the increase/decrease of the mean comparing to Qi Baishi's result, as well as the confidence interval. Nevertheless, the CI is significantlly efficient if the CI does not contain 0. Hence, in the first two tests, the size and price of Xu Beihong's paintings do not contain a significant effect, while the size and price of Zhang Daqian's paintings both contain a significant effect comparing with Qi Baishi. In this case, we can get a conclusion that size and price of Xu Beihong's paintings are close to Qi Baishi's paintings while Zhang Daqian loves to create large paintings, and the prices are higher in this case. So this result might not fit out original guess that all of the three artists have similiar size and price.  Nevertheless, if we calculate the mean value of the paintings (price/size), we can find that all of the three artists have a similiar value. 
+
+According to the third regression test, both intercept is positive and the slope is bigger than 1, indicating that the increase of size means higher price, which fits our hypothesis. The intercept (price) does not contain a significant effect but the size has due to the postive CI. 
+
+In this case, all the paintings by these three masters have high values for collection, and larger size indicates that the painting is more valuable. 
+## References
+
+
+
+
