@@ -1,0 +1,90 @@
+---
+title: "Research of relations between shooting distance and height of players"
+author: "Shuzhi Zeng"
+output: html_document
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(out.width = "100%")
+knitr::opts_chunk$set(dpi = 300)
+
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(ggmap)
+library(viridis)
+library(forcats)
+library(smodels)
+```
+
+
+```{r}
+
+nba_shots <- read_csv("https://statsmaths.github.io/stat_data/nba_shots.csv")
+
+```
+As the highest level basketball league in the world, NBA attracts the sight of millions of fans each year. The competiton is becoming agited so that good team works have become a prerequisite for each team to survive in the league. Hence, a good team should contain both strong inside players to get scores and rebounds and agile outside players to organize and make good passing. Different players have different roles, as well as different ways to score. 
+
+This dataset contains a lot informations of shots by different players, and we can find some relations between different variables. This research is trying to figure out the relation between the heights of players and their shooting distances from each games. This idea comes from our thesis that shorter players (height less than the average height of the dataset) are more likely to have greater shooting distances, and they shoot for three points more often; In contrast, taller players (height greater than the average height of the dataset) will have shorter shooting distance and they mainly score with two-points instead of long distance shot.
+The research would figure out the relation between the heights and shooting distance and hope the result would fit our guess. 
+
+
+```{r}
+player<-group_summarize(nba_shots, player_name)
+```
+We made a group summarize of shooters based on nba_shots dataset.
+```{r}
+mean(nba_shots$shooter_height)
+```
+First we calculate the mean of the height of players from the original dataset and we get the average value is 79.0 inches. 
+
+```{r}
+ggplot(player, aes(shooter_height_mean, shot_dist_mean))+
+  geom_point()+
+  ggtitle("Player Height Distribution related to Shot Distance")
+```
+This graph shows the relation between the average shooters' height and the average of shot distance. Most points gather between 73-83 inches height with a shot distance between 10-20. It's clear to see that most shorter players (height less than 79) have a shot distance greater than 12, and many of them are above 15. For players whose heights are between 75-80, some of them are able to make long distance shot, but some of them get points basically by short distance, since the most of the points distributed between 7-17 inches in distance. Noticing that the points on height 80 vary the greatest. Finally, for those taller players with height more than 80 inches, the shot distances for them are shorter (less than 12), and few of them take long distance shots in the game. 
+Hence, the shot distance is correlated with shooters heights. Shorter players are more likely to make long distance shots. 
+
+```{r}
+three_point<-filter(nba_shots, pts_type=="3")
+mean(three_point$shooter_height)
+```
+Then we filter the data with points type equals 3, so all of the shots are 3 points in this set. Then we take the mean of players heights in this new dataset. We found that the average is smaller than the original set, which fits our hypothesis that shorter players take longer shots, and they are more likely to make 3 point shots in the game than taller players. 
+
+```{r}
+two_point<-filter(nba_shots, pts_type=="2")
+mean(two_point$shooter_height)
+```
+On the other hand we filter the data with points type equals 2 and take the mean, so all of the shots are two points in this set. We get a average of 79.4, which is greater than the average of the orignial dataset (79.0). Therefore our thesis is fit that higher players are more likely to stay inside and take two points instead of long distance shoots. 
+
+
+```{r}
+mean(nba_shots$defender_height)
+```
+Now we focus on the height of defenders since in a single match, the height of defenders should be close to the shooters. For instance, defense team needs a tall player to defend the tall player of the other team inside, while a shorter player can defend the shorter player outside. In this case, the height of defenders is close to the shooters, which should also fit our thesis. We took the mean of the closest defenders height from the original dataset, and get 79.58.
+```{r}
+
+mean(three_point$defender_height)
+```
+Then we took the mean of the height of the defenders from the "three-point" dataset. We got 78.4 which is less than 79.58, which means that the defenders height for three point shots are smaller than the original set, and it fits the conclusion of shooters mean, as well as the thesis.
+```{r}
+
+mean(two_point$defender_height)
+```
+We took the defenders height from "two-point" dataset. We found that the average height of defenders is higher than the average of the original dataset, which fits our thesis, as previous. 
+
+```{r}
+ggplot(player, aes(defender_height_mean, shot_dist_mean))+
+  geom_point()+
+  ggtitle("Defender Height Distribution related to Shot Distance")
+```
+This graph shows the relation between defender height and shot distance. We can see that for shorter players (less than 79), most points are above 10 inches for shot distance, and half of the points are above 15. In contrast, taller players (height larger than 79) points gather below 10 inches, and half of them are below 7 when height is greater than 81. In this case, shorter defenders are more likely to defend shorter players, while taller defenders defend taller shooters inside. This conclusion fits our conjecture and thesis.
+
+
+
+
+Overall, we reached a conclusion that there's a relation between shot distance and player height and both attacker and defender show same relation. Shorter players are more likely to make 3pt shot, while taller players mainly score with 2pt shots instead of long distance shots. 
